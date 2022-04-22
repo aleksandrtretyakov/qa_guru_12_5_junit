@@ -2,12 +2,20 @@ package guru.qa;
 
 import com.codeborne.selenide.Condition;
 import com.codeborne.selenide.Selenide;
+import com.codeborne.selenide.WebDriverRunner;
+import guru.qa.domain.HeaderItem;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
-import org.junit.jupiter.params.provider.ValueSource;
+import org.junit.jupiter.params.provider.*;
 
+import java.util.List;
+import java.util.stream.Stream;
+
+import static com.codeborne.selenide.Condition.text;
 import static com.codeborne.selenide.Condition.visible;
 import static com.codeborne.selenide.Selectors.byText;
+import static com.codeborne.selenide.Selectors.withTextCaseInsensitive;
 import static com.codeborne.selenide.Selenide.*;
 
 public class HomeWorkTest {
@@ -30,17 +38,36 @@ public class HomeWorkTest {
     }
 
     @CsvSource({
-            "Try Kotlin, Simple"
+            "Choose your tool, Find the right tool"
     })
-
-    @ParameterizedTest(name = "For {0} app we should have {1} tab")
-    void checkingOtherSite(String name, String text) {
+    @ParameterizedTest(name = "When we click on {0}, we should see {1} text")
+    void checkingOtherSite(String name, String titleText) {
 //        Pre-condition
-        Selenide.open("https://www.jetbrains.com/ru-ru/");
+        open("https://www.jetbrains.com/");
 //        Steps
-        $(byText("Знакомство с Kotlin")).click();
+        $(byText(name)).click();
 //        Expected result
-        $(".kotlin-overview-code-example-tabs__group").shouldHave(Condition.attribute(text));
-
+        $(byText(titleText)).shouldHave(text(titleText));
     }
+
+    static Stream<Arguments> methodSourceBookPartsTest() {
+        return Stream.of(
+                Arguments.of("War and Peace", List.of(1, 2)),
+                Arguments.of("The Silent Don", List.of(1, 2, 3, 4))
+        );
+    }
+
+    @MethodSource("methodSourceBookPartsTest")
+    @ParameterizedTest
+    void methodSourceExampleTest(String bookName, List<Integer> parts) {
+        System.out.println(bookName + " and list of parts: " + parts);
+    }
+
+    @EnumSource(HeaderItem.class)
+    @ParameterizedTest()
+    void checkingSiteHeader(HeaderItem testData) {
+        open("https://www.ozon.ru/");
+        $(withTextCaseInsensitive(testData.ruName)).shouldBe(visible).click();
+    }
+
 }
